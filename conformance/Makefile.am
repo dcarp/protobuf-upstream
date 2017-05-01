@@ -64,6 +64,8 @@ other_language_protoc_outputs =                                \
   com/google/protobuf/ValueOrBuilder.java                      \
   com/google/protobuf/WrappersProto.java                       \
   com/google/protobuf_test_messages/proto3/TestMessagesProto3.java \
+  conformance/conformance.d                                    \
+  protobuf_test_messages/proto3/test_messages_proto3.d         \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/any.pb.h                                     \
   google/protobuf/any.rb                                       \
@@ -243,7 +245,7 @@ if USE_EXTERNAL_PROTOC
 
 # Some implementations include pre-generated versions of well-known types.
 protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. $(conformance_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. --d_out=. $(conformance_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
@@ -254,7 +256,7 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd --d_out=$$oldpwd $(conformance_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
@@ -268,7 +270,7 @@ $(other_language_protoc_outputs): protoc_middleman
 
 BUILT_SOURCES = $(protoc_outputs) $(other_language_protoc_outputs)
 
-CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp conformance-php conformance-php-c $(other_language_protoc_outputs)
+CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp conformance-php conformance-php-c conformance-d $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -314,6 +316,11 @@ conformance-php-c:
 	@echo 'php -dextension=../php/ext/google/protobuf/modules/protobuf.so ./conformance_php.php' >> conformance-php-c
 	@chmod +x conformance-php-c
 
+conformance-d: $(other_language_protoc_outputs)
+	@echo '#! /bin/sh' > conformance-d
+	@echo 'rdmd -I../d/src -I.. conformance_d.d conformance.d' >> conformance-d
+	@chmod +x conformance-d
+
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
@@ -353,3 +360,6 @@ test_objc: protoc_middleman conformance-test-runner conformance-objc
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_objc.txt ./conformance-objc
 
 endif
+
+test_d: protoc_middleman conformance-test-runner conformance-d
+	./conformance-test-runner --failure_list failure_list_d.txt ./conformance-d

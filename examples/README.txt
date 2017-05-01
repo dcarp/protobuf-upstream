@@ -1,21 +1,22 @@
 This directory contains example code that uses Protocol Buffers to manage an
 address book.  Two programs are provided, each with three different
-implementations, one written in each of C++, Java, and Python.  The add_person
-example adds a new person to an address book, prompting the user to input
-the person's information.  The list_people example lists people already in the
-address book.  The examples use the exact same format in all three languages,
-so you can, for example, use add_person_java to create an address book and then
-use list_people_python to read it.
+implementations, one written in each of C++, D, Java, and Python.  The
+add_person example adds a new person to an address book, prompting the user to
+input the person's information.  The list_people example lists people already
+in the address book.  The examples use the exact same format in all three
+languages, so you can, for example, use add_person_java to create an address
+book and then use list_people_python to read it.
 
 You must install the protobuf package before you can build these.
 
 To build all the examples (on a unix-like system), simply run "make".  This
 creates the following executable files in the current directory:
   add_person_cpp     list_people_cpp
+  add_person_d       list_people_d
   add_person_java    list_people_java
   add_person_python  list_people_python
 
-If you only want to compile examples in one language, use "make cpp"*,
+If you only want to compile examples in one language, use "make cpp", "make d",
 "make java", or "make python".
 
 All of these programs simply take an address book file as their parameter.
@@ -49,6 +50,6 @@ to add a person to the protocol buffer encoded file addressbook.data.  The file
 is created if it does not exist.  To view the data, run:
   ./list_people_go addressbook.data
 
-Observe that the C++, Python, and Java examples in this directory run in a
+Observe that the C++, D, Python, and Java examples in this directory run in a
 similar way and can view/modify files created by the Go example and vice
 versa.
